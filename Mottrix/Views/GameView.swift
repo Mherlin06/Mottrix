@@ -10,19 +10,27 @@ import SwiftUI
 
 struct GameView: View {
     @StateObject private var viewModel = GameViewModel(difficulty: 5)
+    @State private var showingDifficultySelector = false
     
     var body: some View {
         VStack(spacing: 20) {
-            // Header
-            Text("MOTTRIX")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .padding()
-            
-            // Mot cible (pour debug - à supprimer plus tard)
-            Text("Mot à deviner: \(viewModel.game.targetWord)")
-                .font(.caption)
-                .foregroundColor(.gray)
+            // Header avec bouton difficulté
+            HStack {
+                Text("MOTTRIX")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                
+                Spacer()
+                
+                Button("Difficulté") {
+                    showingDifficultySelector = true
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(8)
+            }
+            .padding(.horizontal)
             
             // Grille de jeu
             GridView(game: viewModel.game)
@@ -54,6 +62,9 @@ struct GameView: View {
             Spacer()
         }
         .padding()
+        .sheet(isPresented: $showingDifficultySelector) {
+            DifficultySelectionView(viewModel: viewModel)
+        }
     }
 }
 
@@ -197,7 +208,7 @@ struct GameStatusView: View {
                 Text("🎉 BRAVO! 🎉")
                     .font(.title)
                     .foregroundColor(.green)
-                Text("Vous avez trouvé en \(viewModel.game.currentGuessIndex) essai(s)!")
+                Text("Vous avez trouvé en \(viewModel.game.currentGuessIndex + 1) essai(s)!")
                 
             case .lost:
                 Text("😞 Perdu!")
@@ -221,4 +232,101 @@ struct GameStatusView: View {
 
 #Preview {
     GameView()
+}
+
+// Vue de sélection de difficulté
+struct DifficultySelectionView: View {
+    @ObservedObject var viewModel: GameViewModel
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                Text("Choisissez votre difficulté")
+                    .font(.title2)
+                    .padding()
+                
+                ForEach(5...8, id: \.self) { length in
+                    DifficultyButton(
+                        length: length,
+                        wordCount: DictionaryManager.shared.getWordCount(for: length)
+                    ) {
+                        viewModel.startNewGame(difficulty: length)
+                        dismiss()
+                    }
+                }
+                
+                Spacer()
+            }
+            .navigationTitle("Difficulté")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Fermer") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct DifficultyButton: View {
+    let length: Int
+    let wordCount: Int
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                VStack(alignment: .leading) {
+                    Text("\(length) lettres")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    
+                    Text("\(wordCount) mots disponibles")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                Text(difficultyLevel)
+                    .font(.caption)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(difficultyColor.opacity(0.2))
+                    .foregroundColor(difficultyColor)
+                    .cornerRadius(4)
+            }
+            .padding()
+            .background(Color.gray.opacity(0.1))
+            .cornerRadius(12)
+        }
+        .padding(.horizontal)
+    }
+    
+    private var difficultyLevel: String {
+        switch length {
+        case 5: return "Facile"
+        case 6: return "Moyen"
+        case 7: return "Difficile"
+        case 8: return "Expert"
+        default: return "?"
+        }
+    }
+    
+    private var difficultyColor: Color {
+        switch length {
+        case 5: return .green
+        case 6: return .blue
+        case 7: return .orange
+        case 8: return .red
+        default: return .gray
+        }
+    }
+}
+
+#Preview("Difficulty") {
+    DifficultySelectionView(viewModel: GameViewModel())
 }
