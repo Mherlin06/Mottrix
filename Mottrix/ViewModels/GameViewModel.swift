@@ -5,7 +5,6 @@
 //  Created by Hugues Mourice on 23/07/2025.
 //
 
-
 import Foundation
 
 class GameViewModel: ObservableObject {
@@ -22,33 +21,35 @@ class GameViewModel: ObservableObject {
     
     init(difficulty: Int = 5) {
         guard let word = DictionaryManager.shared.getRandomWord(length: difficulty) else {
-            // Fallback si pas de mot trouvé
             self.game = Game(targetWord: "MAISON")
             return
         }
         self.game = Game(targetWord: word)
-        print("Mot à deviner: \(game.targetWord)") // Pour debug - à supprimer plus tard
+        print("Mot à deviner: \(game.targetWord)")
     }
     
     func submitGuess() {
+        // Le mot complet = première lettre + input utilisateur
+        let completeWord = getCompleteCurrentWord()
+        
         // Validations
-        guard currentInput.count == game.difficulty else {
+        guard completeWord.count == game.difficulty else {
             showError("Le mot doit faire \(game.difficulty) lettres")
             return
         }
         
-        guard DictionaryManager.shared.isValidWord(currentInput) else {
+        guard DictionaryManager.shared.isValidWord(completeWord) else {
             showError("Mot non reconnu")
             return
         }
         
         guard game.currentGuessIndex < game.maxAttempts else {
-            return // Partie terminée
+            return
         }
         
         // Validation du mot contre le mot cible
-        let letterStates = GameLogic.validateGuess(currentInput, against: game.targetWord)
-        let validatedGuess = GameLogic.createGuess(from: currentInput, states: letterStates)
+        let letterStates = GameLogic.validateGuess(completeWord, against: game.targetWord)
+        let validatedGuess = GameLogic.createGuess(from: completeWord, states: letterStates)
         
         // Mettre à jour le jeu
         game.guesses[game.currentGuessIndex] = validatedGuess
@@ -82,11 +83,14 @@ class GameViewModel: ObservableObject {
         currentInput = ""
         clearError()
         
-        print("Nouveau mot à deviner: \(game.targetWord)") // Debug
+        print("Nouveau mot à deviner: \(game.targetWord)")
     }
     
     func addLetter(_ letter: Character) {
-        guard currentInput.count < game.difficulty,
+        // Permettre de saisir jusqu'à difficulty-1 lettres (car première lettre est donnée)
+        let maxInputLength = game.difficulty - 1
+        
+        guard currentInput.count < maxInputLength,
               gameStatus == .playing else { return }
         
         currentInput += String(letter).uppercased()
@@ -99,8 +103,24 @@ class GameViewModel: ObservableObject {
         clearError()
     }
     
+    // Fonction pour obtenir le mot complet avec la première lettre
+    func getCompleteCurrentWord() -> String {
+        guard let firstLetter = game.targetWord.first else { return currentInput }
+        return String(firstLetter) + currentInput
+    }
+    
+    // Fonction pour obtenir la première lettre du mot à deviner
+    func getFirstLetter() -> Character? {
+        return game.targetWord.first
+    }
+    
     private func showError(_ message: String) {
         errorMessage = message
+        
+        // Faire disparaître l'erreur après 3 secondes
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            self.clearError()
+        }
     }
     
     private func clearError() {
