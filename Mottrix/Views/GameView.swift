@@ -23,68 +23,76 @@ struct GameView: View {
             themeManager.backgroundColor
                 .ignoresSafeArea()
             
-            VStack(spacing: 20) {
-                // Header avec timer et menu (icône engrenage)
-                HStack {
-                    Button(action: {
-                        HapticManager.shared.lightImpact()
-                        showingMenu = true
-                    }) {
-                        Image(systemName: "gearshape.fill")
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Header avec timer et menu (icône engrenage)
+                    HStack {
+                        Button(action: {
+                            HapticManager.shared.lightImpact()
+                            showingMenu = true
+                        }) {
+                            Image(systemName: "gearshape.fill")
+                                .font(.title2)
+                                .foregroundColor(.blue)
+                        }
+                        
+                        Spacer()
+                        
+                        Text("MOTRIX")
                             .font(.title2)
-                            .foregroundColor(.blue)
+                            .fontWeight(.bold)
+                            .foregroundColor(themeManager.primaryTextColor)
+                        
+                        Spacer()
+                        
+                        if timerManager.isRunning {
+                            Text(timerManager.formattedTime)
+                                .font(.headline)
+                                .foregroundColor(timerManager.timeRemaining < 10 ? .red : themeManager.primaryTextColor)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(themeManager.secondaryBackgroundColor)
+                                .cornerRadius(8)
+                        } else {
+                            // Espace réservé pour maintenir l'alignement
+                            Color.clear
+                                .frame(width: 80, height: 30)
+                        }
+                    }
+                    .padding(.horizontal)
+                    
+                    // Grille de jeu responsive
+                    EnhancedGridView(
+                        game: viewModel.game,
+                        currentInput: viewModel.currentInput,
+                        themeManager: themeManager,
+                        firstLetter: viewModel.getFirstLetter()
+                    )
+                    .padding(.horizontal)
+                    
+                    // Message d'erreur
+                    if !viewModel.errorMessage.isEmpty {
+                        Text(viewModel.errorMessage)
+                            .foregroundColor(.red)
+                            .font(.caption)
+                            .transition(.opacity)
                     }
                     
-                    Spacer()
+                    // Clavier amélioré
+                    EnhancedKeyboard(viewModel: viewModel, themeManager: themeManager)
+                        .padding(.horizontal)
                     
-                    Text("MOTTRIX")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(themeManager.primaryTextColor)
+                    // Status du jeu
+                    GameStatusView(
+                        viewModel: viewModel,
+                        timerManager: timerManager,
+                        themeManager: themeManager
+                    )
                     
-                    Spacer()
-                    
-                    if timerManager.isRunning {
-                        Text(timerManager.formattedTime)
-                            .font(.headline)
-                            .foregroundColor(timerManager.timeRemaining < 10 ? .red : themeManager.primaryTextColor)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(themeManager.secondaryBackgroundColor)
-                            .cornerRadius(8)
-                    }
+                    Spacer(minLength: 20)
                 }
-                .padding(.horizontal)
-                
-                // Grille de jeu améliorée
-                EnhancedGridView(
-                    game: viewModel.game,
-                    currentInput: viewModel.currentInput,
-                    themeManager: themeManager,
-                    firstLetter: viewModel.getFirstLetter()
-                )
-                
-                // Message d'erreur
-                if !viewModel.errorMessage.isEmpty {
-                    Text(viewModel.errorMessage)
-                        .foregroundColor(.red)
-                        .font(.caption)
-                        .transition(.opacity)
-                }
-                
-                // Clavier amélioré
-                EnhancedKeyboard(viewModel: viewModel, themeManager: themeManager)
-                
-                // Status du jeu
-                GameStatusView(
-                    viewModel: viewModel,
-                    timerManager: timerManager,
-                    themeManager: themeManager
-                )
-                
-                Spacer()
+                .padding(.vertical)
             }
-            .padding()
         }
         .onAppear {
             timerManager.startTimer(duration: 300) // 5 minutes

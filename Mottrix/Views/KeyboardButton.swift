@@ -22,18 +22,33 @@ struct KeyboardButton: View {
         .background(keyboardButtonBackground)
         .foregroundColor(keyboardButtonTextColor)
         .cornerRadius(6)
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(keyboardButtonBorderColor, lineWidth: 1)
+        )
     }
     
     private var keyboardButtonBackground: Color {
         if themeManager.isDarkMode {
-            return Color.gray.opacity(0.3)
+            return Color.white.opacity(0.15) // Plus clair en mode sombre
         } else {
-            return Color.gray.opacity(0.1)
+            return Color.black.opacity(0.08) // Plus sombre en mode clair
         }
     }
     
     private var keyboardButtonTextColor: Color {
-        return themeManager.primaryTextColor
+        if themeManager.isDarkMode {
+            return Color.white // Blanc en mode sombre
+        } else {
+            return Color.black // Noir en mode clair
+        }
+    }
+    
+    private var keyboardButtonBorderColor: Color {
+        if themeManager.isDarkMode {
+            return Color.white.opacity(0.3)
+        } else {
+            return Color.black.opacity(0.2)
+        }
     }
 }
-

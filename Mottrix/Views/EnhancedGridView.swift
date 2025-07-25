@@ -14,22 +14,48 @@ struct EnhancedGridView: View {
     let firstLetter: Character?
     
     var body: some View {
-        VStack(spacing: 4) {
-            ForEach(0..<game.maxAttempts, id: \.self) { row in
-                HStack(spacing: 4) {
-                    ForEach(0..<game.difficulty, id: \.self) { col in
-                        AnimatedLetterCell(
-                            letter: letterAt(row: row, col: col),
-                            state: stateAt(row: row, col: col),
-                            themeManager: themeManager,
-                            isFirstLetter: col == 0,
-                            firstLetterHint: firstLetter,
-                            animationDelay: Double(col) * 0.1
-                        )
+        GeometryReader { geometry in
+            let availableWidth = geometry.size.width * 0.85 // 85% de la largeur
+            let cellSize = calculateCellSize(availableWidth: availableWidth, difficulty: game.difficulty)
+            let spacing: CGFloat = 4
+            
+            VStack(spacing: spacing) {
+                ForEach(0..<game.maxAttempts, id: \.self) { row in
+                    HStack(spacing: spacing) {
+                        ForEach(0..<game.difficulty, id: \.self) { col in
+                            ResponsiveAnimatedLetterCell(
+                                letter: letterAt(row: row, col: col),
+                                state: stateAt(row: row, col: col),
+                                themeManager: themeManager,
+                                isFirstLetter: col == 0,
+                                firstLetterHint: firstLetter,
+                                animationDelay: Double(col) * 0.1,
+                                cellSize: cellSize
+                            )
+                        }
                     }
                 }
             }
+            .frame(maxWidth: .infinity)
         }
+        .frame(height: calculateGridHeight(cellSize: calculateCellSize(availableWidth: UIScreen.main.bounds.width * 0.85, difficulty: game.difficulty)))
+    }
+    
+    private func calculateCellSize(availableWidth: CGFloat, difficulty: Int) -> CGFloat {
+        let spacing: CGFloat = 4
+        let totalSpacing = spacing * CGFloat(difficulty - 1)
+        let availableForCells = availableWidth - totalSpacing
+        let minCellSize: CGFloat = 35
+        let maxCellSize: CGFloat = 60
+        
+        let calculatedSize = availableForCells / CGFloat(difficulty)
+        return max(minCellSize, min(maxCellSize, calculatedSize))
+    }
+    
+    private func calculateGridHeight(cellSize: CGFloat) -> CGFloat {
+        let spacing: CGFloat = 4
+        let totalSpacing = spacing * CGFloat(game.maxAttempts - 1)
+        return (cellSize * CGFloat(game.maxAttempts)) + totalSpacing
     }
     
     private func letterAt(row: Int, col: Int) -> Character? {

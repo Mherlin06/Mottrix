@@ -7,13 +7,14 @@
 
 import SwiftUI
 
-struct AnimatedLetterCell: View {
+struct ResponsiveAnimatedLetterCell: View {
     let letter: Character?
     let state: LetterState
     let themeManager: ThemeManager
     let isFirstLetter: Bool
     let firstLetterHint: Character?
     let animationDelay: Double
+    let cellSize: CGFloat
     
     @State private var isRevealed = false
     @State private var scale: CGFloat = 1.0
@@ -21,16 +22,16 @@ struct AnimatedLetterCell: View {
     var body: some View {
         Rectangle()
             .fill(backgroundColor)
-            .frame(width: 50, height: 50)
+            .frame(width: cellSize, height: cellSize)
             .overlay(
                 Text(displayLetter)
-                    .font(.title2)
+                    .font(dynamicFont)
                     .fontWeight(.bold)
                     .foregroundColor(textColor)
             )
             .overlay(
                 Rectangle()
-                    .stroke(borderColor, lineWidth: 2)
+                    .stroke(borderColor, lineWidth: borderWidth)
             )
             .scaleEffect(scale)
             .rotation3DEffect(
@@ -78,6 +79,22 @@ struct AnimatedLetterCell: View {
         return ""
     }
     
+    private var dynamicFont: Font {
+        // Ajuster la taille de la police selon la taille de la cellule
+        if cellSize < 40 {
+            return .caption
+        } else if cellSize < 50 {
+            return .body
+        } else {
+            return .title2
+        }
+    }
+    
+    private var borderWidth: CGFloat {
+        // Ajuster l'épaisseur de la bordure selon la taille
+        return cellSize < 40 ? 1.5 : 2.0
+    }
+    
     private var backgroundColor: Color {
         switch state {
         case .notGuessed:
@@ -109,4 +126,3 @@ struct AnimatedLetterCell: View {
         return letter != nil ? Color.gray : Color.gray.opacity(0.3)
     }
 }
-

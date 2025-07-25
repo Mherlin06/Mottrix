@@ -42,7 +42,7 @@ struct EnhancedKeyboard: View {
                 .font(.caption)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
-                .background(Color.red.opacity(0.1))
+                .background(themeManager.isDarkMode ? Color.red.opacity(0.2) : Color.red.opacity(0.1))
                 .foregroundColor(.red)
                 .cornerRadius(8)
                 
@@ -54,7 +54,7 @@ struct EnhancedKeyboard: View {
                 .fontWeight(.bold)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
-                .background(Color.green.opacity(0.1))
+                .background(themeManager.isDarkMode ? Color.green.opacity(0.2) : Color.green.opacity(0.1))
                 .foregroundColor(.green)
                 .cornerRadius(8)
             }
