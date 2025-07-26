@@ -25,8 +25,11 @@ struct EnhancedGameStatusView: View {
                     Text("🎉 BRAVO! 🎉")
                         .font(.title)
                         .foregroundColor(.green)
-                    Text("Trouvé en \(viewModel.game.currentGuessIndex + 1) essai(s)!")
+                    Text("Trouvé en \(viewModel.game.currentGuessIndex) essai(s)!")
                         .foregroundColor(themeManager.primaryTextColor)
+                    Text("Mot visible en vert dans la grille")
+                        .font(.caption)
+                        .foregroundColor(.gray)
                     
                     if timerManager.timeRemaining > 0 {
                         Text("Temps restant: \(timerManager.formattedTime)")
@@ -43,6 +46,9 @@ struct EnhancedGameStatusView: View {
                     Text("Le mot était: \(viewModel.game.targetWord)")
                         .fontWeight(.bold)
                         .foregroundColor(themeManager.primaryTextColor)
+                    Text("Visible en rouge dans la grille")
+                        .font(.caption)
+                        .foregroundColor(.gray)
                 }
                 
             case .lostByTimeout:
@@ -62,7 +68,7 @@ struct EnhancedGameStatusView: View {
             if viewModel.gameStatus != .playing {
                 Button("Nouvelle partie") {
                     viewModel.startNewGame()
-                    timerManager.startTimer(duration: 300) {
+                    timerManager.startTimer(duration: 60) {
                         viewModel.handleTimeExpired()
                     }
                     HapticManager.shared.success()

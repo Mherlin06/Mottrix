@@ -13,12 +13,14 @@ class GameViewModel: ObservableObject {
     @Published var gameStatus: GameStatus = .playing
     @Published var errorMessage: String = ""
     @Published var showSolutionWord: Bool = false
+    @Published var showVictoryWord: Bool = false
+    @Published var firstLetterUsed: Bool = true // Nouvelle propriété pour gérer l'indice
     
     enum GameStatus {
         case playing
         case won
         case lost
-        case lostByTimeout // Nouveau statut pour défaite par timeout
+        case lostByTimeout
     }
     
     init(difficulty: Int = 5) {
@@ -54,12 +56,18 @@ class GameViewModel: ObservableObject {
         
         if GameLogic.isGameWon(validatedGuess) {
             gameStatus = .won
+            showVictoryWord = true
+            displayVictoryWord()
         } else {
             game.currentGuessIndex += 1
             
             if game.currentGuessIndex >= game.maxAttempts {
                 gameStatus = .lost
                 showSolutionWord = true
+                displaySolutionWord()
+            } else {
+                // Réinitialiser l'indice pour la nouvelle ligne
+                firstLetterUsed = true
             }
         }
         
@@ -67,14 +75,11 @@ class GameViewModel: ObservableObject {
         clearError()
     }
     
-    // Nouvelle fonction pour gérer la défaite par timeout
     func handleTimeExpired() {
         guard gameStatus == .playing else { return }
         
         gameStatus = .lostByTimeout
         showSolutionWord = true
-        
-        // Afficher le mot solution sur la ligne suivante disponible
         displaySolutionWord()
     }
     
@@ -84,11 +89,23 @@ class GameViewModel: ObservableObject {
         game.guesses[solutionLineIndex] = solutionGuess
     }
     
+    private func displayVictoryWord() {
+        // Modifier la ligne gagnante pour l'afficher en vert
+        let victoryLineIndex = game.currentGuessIndex
+        var victoryGuess = game.guesses[victoryLineIndex]
+        
+        for i in 0..<victoryGuess.letters.count {
+            victoryGuess.letters[i].state = .victory
+        }
+        
+        game.guesses[victoryLineIndex] = victoryGuess
+    }
+    
     private func createSolutionGuess() -> Guess {
         var guess = Guess(wordLength: game.targetWord.count)
         
         for char in game.targetWord {
-            let gameLetter = GameLetter(character: char, state: .solution) // Nouvel état pour la solution
+            let gameLetter = GameLetter(character: char, state: .solution)
             guess.letters.append(gameLetter)
         }
         
@@ -106,34 +123,57 @@ class GameViewModel: ObservableObject {
         gameStatus = .playing
         currentInput = ""
         showSolutionWord = false
+        showVictoryWord = false
+        firstLetterUsed = true
         clearError()
         
         print("Nouveau mot à deviner: \(game.targetWord)")
     }
     
     func addLetter(_ letter: Character) {
-        let maxInputLength = game.difficulty - 1
+        guard gameStatus == .playing else { return }
         
-        guard currentInput.count < maxInputLength,
-              gameStatus == .playing else { return }
+        let maxInputLength = firstLetterUsed ? game.difficulty - 1 : game.difficulty
+        guard currentInput.count < maxInputLength else { return }
         
+        // Si on tape la première lettre alors qu'on utilise l'indice, on l'ignore
+        if firstLetterUsed && currentInput.isEmpty &&
+           String(letter).uppercased() == String(game.targetWord.first!).uppercased() {
+            return
+        }
+        
+        // Ajouter la lettre normalement
         currentInput += String(letter).uppercased()
         clearError()
     }
     
     func deleteLetter() {
-        guard !currentInput.isEmpty else { return }
-        currentInput.removeLast()
+        if !currentInput.isEmpty {
+            // Supprimer la dernière lettre tapée
+            currentInput.removeLast()
+        } else if firstLetterUsed {
+            // Si l'input est vide et qu'on utilise l'indice, supprimer l'indice
+            firstLetterUsed = false
+        }
+        
         clearError()
     }
     
     func getCompleteCurrentWord() -> String {
-        guard let firstLetter = game.targetWord.first else { return currentInput }
-        return String(firstLetter) + currentInput
+        if firstLetterUsed {
+            guard let firstLetter = game.targetWord.first else { return currentInput }
+            return String(firstLetter) + currentInput
+        } else {
+            return currentInput
+        }
     }
     
     func getFirstLetter() -> Character? {
         return game.targetWord.first
+    }
+    
+    func shouldShowFirstLetterHint() -> Bool {
+        return firstLetterUsed && gameStatus == .playing
     }
     
     private func showError(_ message: String) {

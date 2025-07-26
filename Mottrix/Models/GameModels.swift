@@ -13,7 +13,8 @@ enum LetterState {
     case correct
     case wrongPosition
     case absent
-    case solution  // Nouveau : pour afficher la solution en rouge
+    case solution  // Pour afficher la solution en rouge
+    case victory   // Nouveau : pour afficher le mot gagnant en vert
 }
 
 // Une lettre avec son état
@@ -60,7 +61,8 @@ struct Game {
     }
     
     var isGameWon: Bool {
-        guesses[currentGuessIndex-1].word == targetWord
+        guard currentGuessIndex > 0 else { return false }
+        return guesses[currentGuessIndex-1].word == targetWord
     }
     
     var isGameOver: Bool {

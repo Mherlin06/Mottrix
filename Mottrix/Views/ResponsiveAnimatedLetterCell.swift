@@ -19,6 +19,7 @@ struct ResponsiveAnimatedLetterCell: View {
     @State private var isRevealed = false
     @State private var scale: CGFloat = 1.0
     @State private var isPulsing = false
+    @State private var animationId = UUID() // Pour forcer la réinitialisation des animations
     
     var body: some View {
         Rectangle()
@@ -40,21 +41,21 @@ struct ResponsiveAnimatedLetterCell: View {
                 axis: (x: 0, y: 1, z: 0)
             )
             .opacity(isPulsing ? 0.7 : 1.0)
+            .id(animationId) // Utiliser l'ID pour forcer la réinitialisation
             .onAppear {
+                resetAnimations()
+                
                 if state != .notGuessed {
                     withAnimation(.spring(response: 0.5, dampingFraction: 0.6).delay(animationDelay)) {
                         isRevealed = true
                     }
                 }
                 
-                // Animation de pulsation pour la solution
-                if state == .solution {
-                    withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
-                        isPulsing = true
-                    }
-                }
+                startPulsingIfNeeded()
             }
             .onChange(of: state) { newState in
+                resetAnimations()
+                
                 if newState != .notGuessed {
                     withAnimation(.spring(response: 0.3)) {
                         scale = 1.1
@@ -68,7 +69,7 @@ struct ResponsiveAnimatedLetterCell: View {
                     
                     // Haptic feedback selon l'état
                     switch newState {
-                    case .correct:
+                    case .correct, .victory:
                         HapticManager.shared.success()
                     case .wrongPosition:
                         HapticManager.shared.mediumImpact()
@@ -79,15 +80,30 @@ struct ResponsiveAnimatedLetterCell: View {
                     default:
                         break
                     }
-                    
-                    // Animation de pulsation pour la solution
-                    if newState == .solution {
-                        withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
-                            isPulsing = true
-                        }
-                    }
                 }
+                
+                startPulsingIfNeeded()
             }
+    }
+    
+    private func resetAnimations() {
+        // Arrêter toutes les animations en cours
+        withAnimation(.none) {
+            isPulsing = false
+            scale = 1.0
+        }
+        
+        // Générer un nouvel ID pour forcer la réinitialisation
+        animationId = UUID()
+    }
+    
+    private func startPulsingIfNeeded() {
+        // Animation de pulsation uniquement pour la solution (rouge)
+        if state == .solution {
+            withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                isPulsing = true
+            }
+        }
     }
     
     private var displayLetter: String {
@@ -122,7 +138,9 @@ struct ResponsiveAnimatedLetterCell: View {
         case .absent:
             return Color.gray.opacity(0.5)
         case .solution:
-            return Color.red // Rouge pour la solution
+            return Color.red
+        case .victory:
+            return Color.green.opacity(0.8) // Vert plus vif pour la victoire
         }
     }
     
@@ -130,7 +148,7 @@ struct ResponsiveAnimatedLetterCell: View {
         switch state {
         case .notGuessed:
             return themeManager.primaryTextColor
-        case .correct, .wrongPosition, .solution:
+        case .correct, .wrongPosition, .solution, .victory:
             return Color.white
         case .absent:
             return themeManager.isDarkMode ? Color.white : Color.black
@@ -140,6 +158,9 @@ struct ResponsiveAnimatedLetterCell: View {
     private var borderColor: Color {
         if state == .solution {
             return Color.red.opacity(0.8)
+        }
+        if state == .victory {
+            return Color.green.opacity(0.8)
         }
         if isFirstLetter && state == .notGuessed {
             return Color.blue.opacity(0.7)

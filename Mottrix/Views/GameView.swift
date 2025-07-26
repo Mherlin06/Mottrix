@@ -12,7 +12,7 @@ struct GameView: View {
     @StateObject private var timerManager = TimerManager()
     @ObservedObject var themeManager: ThemeManager
     @State private var showingMenu = false
-    @State private var timerScale: CGFloat = 1.0 // État local pour l'animation
+    @State private var timerScale: CGFloat = 1.0
     
     init(difficulty: Int, themeManager: ThemeManager) {
         self._viewModel = StateObject(wrappedValue: GameViewModel(difficulty: difficulty))
@@ -69,7 +69,10 @@ struct GameView: View {
                         currentInput: viewModel.currentInput,
                         themeManager: themeManager,
                         firstLetter: viewModel.getFirstLetter(),
-                        showSolutionWord: viewModel.showSolutionWord
+                        showSolutionWord: viewModel.showSolutionWord,
+                        showVictoryWord: viewModel.showVictoryWord,
+                        shouldShowFirstLetterHint: viewModel.shouldShowFirstLetterHint(),
+                        firstLetterUsed: viewModel.firstLetterUsed
                     )
                     .padding(.horizontal)
                     
@@ -100,19 +103,17 @@ struct GameView: View {
             }
         }
         .onAppear {
-            // Démarrer le timer avec callback de fin
-            timerManager.startTimer(duration: 300) {
+            // Démarrer le timer avec callback de fin - 60 secondes par défaut
+            timerManager.startTimer(duration: 60) {
                 viewModel.handleTimeExpired()
             }
         }
         .onChange(of: timerManager.isCriticalTime) { isCritical in
-            // Gérer l'animation de clignotement uniquement quand nécessaire
             if isCritical && timerManager.isRunning {
                 withAnimation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true)) {
                     timerScale = 1.1
                 }
             } else {
-                // Arrêter l'animation en remettant l'échelle à normal
                 withAnimation(.easeOut(duration: 0.2)) {
                     timerScale = 1.0
                 }
@@ -121,7 +122,6 @@ struct GameView: View {
         .onChange(of: viewModel.gameStatus) { status in
             if status != .playing {
                 timerManager.stopTimer()
-                // Arrêter l'animation quand le jeu se termine
                 withAnimation(.easeOut(duration: 0.2)) {
                     timerScale = 1.0
                 }
@@ -136,7 +136,7 @@ struct GameView: View {
     
     private var timerTextColor: Color {
         if !timerManager.isRunning && timerManager.hasExpired {
-            return .red // Rouge fixe quand expiré
+            return .red
         } else if timerManager.isCriticalTime {
             return .red
         } else if timerManager.isLowTime {
@@ -148,7 +148,7 @@ struct GameView: View {
     
     private var timerBackgroundColor: Color {
         if !timerManager.isRunning && timerManager.hasExpired {
-            return Color.red.opacity(0.1) // Rouge fixe quand expiré
+            return Color.red.opacity(0.1)
         } else if timerManager.isCriticalTime {
             return Color.red.opacity(0.1)
         } else if timerManager.isLowTime {
