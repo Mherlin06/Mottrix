@@ -12,10 +12,11 @@ struct EnhancedGridView: View {
     let currentInput: String
     let themeManager: ThemeManager
     let firstLetter: Character?
+    let showSolutionWord: Bool
     
     var body: some View {
         GeometryReader { geometry in
-            let availableWidth = geometry.size.width * 0.85 // 85% de la largeur
+            let availableWidth = geometry.size.width * 0.85
             let cellSize = calculateCellSize(availableWidth: availableWidth, difficulty: game.difficulty)
             let spacing: CGFloat = 4
             
@@ -59,14 +60,18 @@ struct EnhancedGridView: View {
     }
     
     private func letterAt(row: Int, col: Int) -> Character? {
-        // Première colonne : toujours afficher la première lettre comme indice
-        if col == 0 {
+        // Première colonne : toujours afficher la première lettre comme indice (sauf pour la solution)
+        if col == 0 && !isSolutionRow(row: row) {
             return firstLetter
         }
         
         // Si c'est la ligne actuelle et qu'on est en train de taper
-        if row == game.currentGuessIndex {
-            let inputIndex = col - 1 // -1 car première lettre prise par l'indice
+        if row == game.currentGuessIndex && !showSolutionWord {
+            if col == 0 {
+                return firstLetter
+            }
+            
+            let inputIndex = col - 1
             if inputIndex < currentInput.count {
                 let stringIndex = currentInput.index(currentInput.startIndex, offsetBy: inputIndex)
                 return currentInput[stringIndex]
@@ -74,25 +79,38 @@ struct EnhancedGridView: View {
             return nil
         }
         
-        // Sinon, afficher les lettres des tentatives précédentes
+        // Afficher les lettres des tentatives précédentes
         let guess = game.guesses[row]
         guard col < guess.letters.count else { return nil }
         return guess.letters[col].character
     }
     
     private func stateAt(row: Int, col: Int) -> LetterState {
+        // Vérifier si c'est la ligne de solution
+        if isSolutionRow(row: row) {
+            let guess = game.guesses[row]
+            guard col < guess.letters.count else { return .notGuessed }
+            return guess.letters[col].state
+        }
+        
         // La première lettre est toujours correcte si c'est une ligne complétée
         if col == 0 && row < game.currentGuessIndex {
             return .correct
         }
         
         // Si c'est la ligne actuelle, pas encore d'état
-        if row == game.currentGuessIndex {
+        if row == game.currentGuessIndex && !showSolutionWord {
             return .notGuessed
         }
         
         let guess = game.guesses[row]
         guard col < guess.letters.count else { return .notGuessed }
         return guess.letters[col].state
+    }
+    
+    private func isSolutionRow(row: Int) -> Bool {
+        guard showSolutionWord else { return false }
+        let guess = game.guesses[row]
+        return !guess.letters.isEmpty && guess.letters.first?.state == .solution
     }
 }

@@ -9,10 +9,11 @@ import Foundation
 
 // État d'une lettre dans le jeu
 enum LetterState {
-    case notGuessed    // Pas encore essayée
-    case correct       // Bonne lettre, bonne position (vert)
-    case wrongPosition // Bonne lettre, mauvaise position (jaune)
-    case absent        // Lettre absente du mot (gris)
+    case notGuessed
+    case correct
+    case wrongPosition
+    case absent
+    case solution  // Nouveau : pour afficher la solution en rouge
 }
 
 // Une lettre avec son état

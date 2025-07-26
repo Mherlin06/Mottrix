@@ -18,6 +18,7 @@ struct ResponsiveAnimatedLetterCell: View {
     
     @State private var isRevealed = false
     @State private var scale: CGFloat = 1.0
+    @State private var isPulsing = false
     
     var body: some View {
         Rectangle()
@@ -38,10 +39,18 @@ struct ResponsiveAnimatedLetterCell: View {
                 .degrees(isRevealed ? 360 : 0),
                 axis: (x: 0, y: 1, z: 0)
             )
+            .opacity(isPulsing ? 0.7 : 1.0)
             .onAppear {
                 if state != .notGuessed {
                     withAnimation(.spring(response: 0.5, dampingFraction: 0.6).delay(animationDelay)) {
                         isRevealed = true
+                    }
+                }
+                
+                // Animation de pulsation pour la solution
+                if state == .solution {
+                    withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                        isPulsing = true
                     }
                 }
             }
@@ -65,8 +74,17 @@ struct ResponsiveAnimatedLetterCell: View {
                         HapticManager.shared.mediumImpact()
                     case .absent:
                         HapticManager.shared.lightImpact()
+                    case .solution:
+                        HapticManager.shared.error()
                     default:
                         break
+                    }
+                    
+                    // Animation de pulsation pour la solution
+                    if newState == .solution {
+                        withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                            isPulsing = true
+                        }
                     }
                 }
             }
@@ -80,7 +98,6 @@ struct ResponsiveAnimatedLetterCell: View {
     }
     
     private var dynamicFont: Font {
-        // Ajuster la taille de la police selon la taille de la cellule
         if cellSize < 40 {
             return .caption
         } else if cellSize < 50 {
@@ -91,7 +108,6 @@ struct ResponsiveAnimatedLetterCell: View {
     }
     
     private var borderWidth: CGFloat {
-        // Ajuster l'épaisseur de la bordure selon la taille
         return cellSize < 40 ? 1.5 : 2.0
     }
     
@@ -105,6 +121,8 @@ struct ResponsiveAnimatedLetterCell: View {
             return Color.orange
         case .absent:
             return Color.gray.opacity(0.5)
+        case .solution:
+            return Color.red // Rouge pour la solution
         }
     }
     
@@ -112,7 +130,7 @@ struct ResponsiveAnimatedLetterCell: View {
         switch state {
         case .notGuessed:
             return themeManager.primaryTextColor
-        case .correct, .wrongPosition:
+        case .correct, .wrongPosition, .solution:
             return Color.white
         case .absent:
             return themeManager.isDarkMode ? Color.white : Color.black
@@ -120,8 +138,11 @@ struct ResponsiveAnimatedLetterCell: View {
     }
     
     private var borderColor: Color {
+        if state == .solution {
+            return Color.red.opacity(0.8)
+        }
         if isFirstLetter && state == .notGuessed {
-            return Color.blue.opacity(0.7) // Bordure bleue pour indiquer l'indice
+            return Color.blue.opacity(0.7)
         }
         return letter != nil ? Color.gray : Color.gray.opacity(0.3)
     }

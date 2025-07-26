@@ -12,11 +12,13 @@ class GameViewModel: ObservableObject {
     @Published var currentInput: String = ""
     @Published var gameStatus: GameStatus = .playing
     @Published var errorMessage: String = ""
+    @Published var showSolutionWord: Bool = false
     
     enum GameStatus {
         case playing
         case won
         case lost
+        case lostByTimeout // Nouveau statut pour défaite par timeout
     }
     
     init(difficulty: Int = 5) {
@@ -29,10 +31,8 @@ class GameViewModel: ObservableObject {
     }
     
     func submitGuess() {
-        // Le mot complet = première lettre + input utilisateur
         let completeWord = getCompleteCurrentWord()
         
-        // Validations
         guard completeWord.count == game.difficulty else {
             showError("Le mot doit faire \(game.difficulty) lettres")
             return
@@ -47,28 +47,52 @@ class GameViewModel: ObservableObject {
             return
         }
         
-        // Validation du mot contre le mot cible
         let letterStates = GameLogic.validateGuess(completeWord, against: game.targetWord)
         let validatedGuess = GameLogic.createGuess(from: completeWord, states: letterStates)
         
-        // Mettre à jour le jeu
         game.guesses[game.currentGuessIndex] = validatedGuess
         
-        // Vérifier victoire
         if GameLogic.isGameWon(validatedGuess) {
             gameStatus = .won
         } else {
             game.currentGuessIndex += 1
             
-            // Vérifier défaite
             if game.currentGuessIndex >= game.maxAttempts {
                 gameStatus = .lost
+                showSolutionWord = true
             }
         }
         
-        // Reset input
         currentInput = ""
         clearError()
+    }
+    
+    // Nouvelle fonction pour gérer la défaite par timeout
+    func handleTimeExpired() {
+        guard gameStatus == .playing else { return }
+        
+        gameStatus = .lostByTimeout
+        showSolutionWord = true
+        
+        // Afficher le mot solution sur la ligne suivante disponible
+        displaySolutionWord()
+    }
+    
+    private func displaySolutionWord() {
+        let solutionLineIndex = min(game.currentGuessIndex, game.maxAttempts - 1)
+        let solutionGuess = createSolutionGuess()
+        game.guesses[solutionLineIndex] = solutionGuess
+    }
+    
+    private func createSolutionGuess() -> Guess {
+        var guess = Guess(wordLength: game.targetWord.count)
+        
+        for char in game.targetWord {
+            let gameLetter = GameLetter(character: char, state: .solution) // Nouvel état pour la solution
+            guess.letters.append(gameLetter)
+        }
+        
+        return guess
     }
     
     func startNewGame(difficulty: Int? = nil) {
@@ -81,13 +105,13 @@ class GameViewModel: ObservableObject {
         game = Game(targetWord: word)
         gameStatus = .playing
         currentInput = ""
+        showSolutionWord = false
         clearError()
         
         print("Nouveau mot à deviner: \(game.targetWord)")
     }
     
     func addLetter(_ letter: Character) {
-        // Permettre de saisir jusqu'à difficulty-1 lettres (car première lettre est donnée)
         let maxInputLength = game.difficulty - 1
         
         guard currentInput.count < maxInputLength,
@@ -103,13 +127,11 @@ class GameViewModel: ObservableObject {
         clearError()
     }
     
-    // Fonction pour obtenir le mot complet avec la première lettre
     func getCompleteCurrentWord() -> String {
         guard let firstLetter = game.targetWord.first else { return currentInput }
         return String(firstLetter) + currentInput
     }
     
-    // Fonction pour obtenir la première lettre du mot à deviner
     func getFirstLetter() -> Character? {
         return game.targetWord.first
     }
@@ -117,7 +139,6 @@ class GameViewModel: ObservableObject {
     private func showError(_ message: String) {
         errorMessage = message
         
-        // Faire disparaître l'erreur après 3 secondes
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             self.clearError()
         }

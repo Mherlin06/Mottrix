@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct GameStatusView: View {
+struct EnhancedGameStatusView: View {
     @ObservedObject var viewModel: GameViewModel
     @ObservedObject var timerManager: TimerManager
     let themeManager: ThemeManager
@@ -44,12 +44,27 @@ struct GameStatusView: View {
                         .fontWeight(.bold)
                         .foregroundColor(themeManager.primaryTextColor)
                 }
+                
+            case .lostByTimeout:
+                VStack(spacing: 10) {
+                    Text("⏰ Temps écoulé!")
+                        .font(.title)
+                        .foregroundColor(.red)
+                    Text("Le mot était: \(viewModel.game.targetWord)")
+                        .fontWeight(.bold)
+                        .foregroundColor(themeManager.primaryTextColor)
+                    Text("Visible en rouge dans la grille")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
             }
             
             if viewModel.gameStatus != .playing {
                 Button("Nouvelle partie") {
                     viewModel.startNewGame()
-                    timerManager.startTimer(duration: 300)
+                    timerManager.startTimer(duration: 300) {
+                        viewModel.handleTimeExpired()
+                    }
                     HapticManager.shared.success()
                 }
                 .font(.headline)

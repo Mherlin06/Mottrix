@@ -8,6 +8,7 @@
 
 /* Begin PBXFileReference section */
 		D7023AA52E30F6D5002B2F6B /* Mottrix.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mottrix.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D76026C82E35767700204968 /* Mottrix.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = Mottrix.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -41,6 +42,13 @@
 			isa = PBXGroup;
 			children = (
 				D7023AA52E30F6D5002B2F6B /* Mottrix.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D76026C92E35767700204968 /* Products */ = {
+			isa = PBXGroup;
+			children = (
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -97,6 +105,12 @@
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D7023AA62E30F6D5002B2F6B /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = D76026C92E35767700204968 /* Products */;
+					ProjectRef = D76026C82E35767700204968 /* Mottrix.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				D7023AA42E30F6D5002B2F6B /* Mottrix */,

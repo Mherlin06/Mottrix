@@ -60,7 +60,7 @@ struct WelcomeView: View {
                     Spacer()
                     
                     Toggle("", isOn: $themeManager.isDarkMode)
-                        .onChange(of: themeManager.isDarkMode) { _ in
+                        .onChange(of: themeManager.isDarkMode) {
                             HapticManager.shared.lightImpact()
                         }
                 }
