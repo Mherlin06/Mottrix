@@ -15,6 +15,7 @@ class GameViewModel: ObservableObject {
     @Published var showSolutionWord: Bool = false
     @Published var showVictoryWord: Bool = false
     @Published var firstLetterUsed: Bool = true // Nouvelle propriété pour gérer l'indice
+    @Published var keyboardLetterStates: [Character: LetterState] = [:] // États des lettres du clavier
     
     enum GameStatus {
         case playing
@@ -53,6 +54,9 @@ class GameViewModel: ObservableObject {
         let validatedGuess = GameLogic.createGuess(from: completeWord, states: letterStates)
         
         game.guesses[game.currentGuessIndex] = validatedGuess
+        
+        // Mettre à jour les états des lettres du clavier
+        updateKeyboardStates(for: validatedGuess)
         
         if GameLogic.isGameWon(validatedGuess) {
             gameStatus = .won
@@ -125,6 +129,7 @@ class GameViewModel: ObservableObject {
         showSolutionWord = false
         showVictoryWord = false
         firstLetterUsed = true
+        keyboardLetterStates = [:]
         clearError()
         
         print("Nouveau mot à deviner: \(game.targetWord)")
@@ -174,6 +179,36 @@ class GameViewModel: ObservableObject {
     
     func shouldShowFirstLetterHint() -> Bool {
         return firstLetterUsed && gameStatus == .playing
+    }
+    
+    // Fonction pour mettre à jour les états des lettres du clavier
+    private func updateKeyboardStates(for guess: Guess) {
+        for gameLetter in guess.letters {
+            let char = gameLetter.character
+            let currentState = keyboardLetterStates[char] ?? .notGuessed
+            
+            // Ne mettre à jour que si le nouvel état est "meilleur"
+            // Priorité: .correct > .wrongPosition > .absent
+            switch gameLetter.state {
+            case .correct:
+                keyboardLetterStates[char] = .correct
+            case .wrongPosition:
+                if currentState != .correct {
+                    keyboardLetterStates[char] = .wrongPosition
+                }
+            case .absent:
+                if currentState == .notGuessed {
+                    keyboardLetterStates[char] = .absent
+                }
+            default:
+                break
+            }
+        }
+    }
+    
+    // Fonction pour obtenir l'état d'une lettre du clavier
+    func getKeyboardLetterState(_ letter: Character) -> LetterState {
+        return keyboardLetterStates[letter] ?? .notGuessed
     }
     
     private func showError(_ message: String) {

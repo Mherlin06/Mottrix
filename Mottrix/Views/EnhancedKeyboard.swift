@@ -24,6 +24,7 @@ struct EnhancedKeyboard: View {
                     ForEach(row, id: \.self) { letter in
                         KeyboardButton(
                             letter: letter,
+                            letterState: viewModel.getKeyboardLetterState(Character(letter)),
                             themeManager: themeManager
                         ) {
                             viewModel.addLetter(Character(letter))

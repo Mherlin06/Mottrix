@@ -69,19 +69,6 @@ struct WelcomeView: View {
                     }
                 }
                 
-                // Toggle thème sombre
-                HStack {
-                    Text("Thème sombre")
-                        .foregroundColor(themeManager.primaryTextColor)
-                    
-                    Spacer()
-                    
-                    Toggle("", isOn: $themeManager.isDarkMode)
-                        .onChange(of: themeManager.isDarkMode) {
-                            HapticManager.shared.lightImpact()
-                        }
-                }
-                .padding(.horizontal)
                 
                 // Bouton Jouer
                 Button("JOUER") {

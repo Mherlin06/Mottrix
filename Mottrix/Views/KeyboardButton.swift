@@ -9,6 +9,7 @@ import SwiftUI
 
 struct KeyboardButton: View {
     let letter: String
+    let letterState: LetterState
     let themeManager: ThemeManager
     let action: () -> Void
     
@@ -29,26 +30,67 @@ struct KeyboardButton: View {
     }
     
     private var keyboardButtonBackground: Color {
-        if themeManager.isDarkMode {
-            return Color.white.opacity(0.15) // Plus clair en mode sombre
-        } else {
-            return Color.black.opacity(0.08) // Plus sombre en mode clair
+        switch letterState {
+        case .correct:
+            return Color.green
+        case .wrongPosition:
+            return Color.orange
+        case .absent:
+            return Color.gray.opacity(0.6)
+        case .notGuessed:
+            if themeManager.isDarkMode {
+                return Color.white.opacity(0.15)
+            } else {
+                return Color.black.opacity(0.08)
+            }
+        default:
+            if themeManager.isDarkMode {
+                return Color.white.opacity(0.15)
+            } else {
+                return Color.black.opacity(0.08)
+            }
         }
     }
     
     private var keyboardButtonTextColor: Color {
-        if themeManager.isDarkMode {
-            return Color.white // Blanc en mode sombre
-        } else {
-            return Color.black // Noir en mode clair
+        switch letterState {
+        case .correct, .wrongPosition, .absent:
+            return Color.white
+        case .notGuessed:
+            if themeManager.isDarkMode {
+                return Color.white
+            } else {
+                return Color.black
+            }
+        default:
+            if themeManager.isDarkMode {
+                return Color.white
+            } else {
+                return Color.black
+            }
         }
     }
     
     private var keyboardButtonBorderColor: Color {
-        if themeManager.isDarkMode {
-            return Color.white.opacity(0.3)
-        } else {
-            return Color.black.opacity(0.2)
+        switch letterState {
+        case .correct:
+            return Color.green.opacity(0.8)
+        case .wrongPosition:
+            return Color.orange.opacity(0.8)
+        case .absent:
+            return Color.gray.opacity(0.8)
+        case .notGuessed:
+            if themeManager.isDarkMode {
+                return Color.white.opacity(0.3)
+            } else {
+                return Color.black.opacity(0.2)
+            }
+        default:
+            if themeManager.isDarkMode {
+                return Color.white.opacity(0.3)
+            } else {
+                return Color.black.opacity(0.2)
+            }
         }
     }
 }
