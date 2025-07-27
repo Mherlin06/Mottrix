@@ -11,8 +11,8 @@ struct GameView: View {
     @StateObject private var viewModel: GameViewModel
     @StateObject private var timerManager = TimerManager()
     @ObservedObject var themeManager: ThemeManager
-    @State private var showingMenu = false
     @State private var timerScale: CGFloat = 1.0
+    @Environment(\.dismiss) private var dismiss
     
     init(difficulty: Int, themeManager: ThemeManager) {
         self._viewModel = StateObject(wrappedValue: GameViewModel(difficulty: difficulty))
@@ -26,15 +26,19 @@ struct GameView: View {
             
             ScrollView {
                 VStack(spacing: 20) {
-                    // Header avec timer et menu
+                    // Header avec timer et bouton retour
                     HStack {
                         Button(action: {
                             HapticManager.shared.lightImpact()
-                            showingMenu = true
+                            dismiss()
                         }) {
-                            Image(systemName: "gearshape.fill")
-                                .font(.title2)
-                                .foregroundColor(.blue)
+                            HStack(spacing: 5) {
+                                Image(systemName: "chevron.left")
+                                    .font(.title3)
+                                Text("Accueil")
+                                    .font(.headline)
+                            }
+                            .foregroundColor(.blue)
                         }
                         
                         Spacer()
@@ -125,11 +129,6 @@ struct GameView: View {
                 withAnimation(.easeOut(duration: 0.2)) {
                     timerScale = 1.0
                 }
-            }
-        }
-        .sheet(isPresented: $showingMenu) {
-            MenuView(themeManager: themeManager) {
-                showingMenu = false
             }
         }
     }

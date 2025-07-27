@@ -12,6 +12,7 @@ struct WelcomeView: View {
     @StateObject private var themeManager = ThemeManager()
     @State private var selectedDifficulty: Int = 5
     @State private var showGame = false
+    @State private var showingMenu = false
     
     var body: some View {
         ZStack {
@@ -19,6 +20,22 @@ struct WelcomeView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 30) {
+                // Header avec bouton menu
+                HStack {
+                    Spacer()
+                    
+                    Button(action: {
+                        HapticManager.shared.lightImpact()
+                        showingMenu = true
+                    }) {
+                        Image(systemName: "gearshape.fill")
+                            .font(.title2)
+                            .foregroundColor(.blue)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, 10)
+                
                 // Logo et titre
                 VStack(spacing: 10) {
                     Text("🎯")
@@ -95,6 +112,11 @@ struct WelcomeView: View {
                 difficulty: selectedDifficulty,
                 themeManager: themeManager
             )
+        }
+        .sheet(isPresented: $showingMenu) {
+            MenuView(themeManager: themeManager) {
+                showingMenu = false
+            }
         }
     }
 }
