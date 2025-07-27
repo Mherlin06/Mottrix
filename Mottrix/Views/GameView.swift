@@ -112,8 +112,8 @@ struct GameView: View {
                 viewModel.handleTimeExpired()
             }
         }
-        .onChange(of: timerManager.isCriticalTime) { isCritical in
-            if isCritical && timerManager.isRunning {
+        .onChange(of: timerManager.isCriticalTime) {
+            if timerManager.isCriticalTime && timerManager.isRunning {
                 withAnimation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true)) {
                     timerScale = 1.1
                 }
@@ -123,8 +123,8 @@ struct GameView: View {
                 }
             }
         }
-        .onChange(of: viewModel.gameStatus) { status in
-            if status != .playing {
+        .onChange(of: viewModel.gameStatus) {
+            if viewModel.gameStatus != .playing {
                 timerManager.stopTimer()
                 withAnimation(.easeOut(duration: 0.2)) {
                     timerScale = 1.0

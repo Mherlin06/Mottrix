@@ -19,7 +19,7 @@ class DictionaryManager {
     
     private func loadFrenchWords() {
         guard let path = Bundle.main.path(forResource: "french_words", ofType: "txt"),
-              let content = try? String(contentsOfFile: path) else {
+              let content = try? String(contentsOfFile: path, encoding: .utf8) else {
             print("❌ Impossible de charger le fichier french_words.txt")
             loadFallbackWords()
             return

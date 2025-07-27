@@ -16,9 +16,8 @@ struct EnhancedGameStatusView: View {
         VStack(spacing: 15) {
             switch viewModel.gameStatus {
             case .playing:
-                Text("Tentative \(viewModel.game.currentGuessIndex + 1)/\(viewModel.game.maxAttempts)")
-                    .font(.headline)
-                    .foregroundColor(themeManager.primaryTextColor)
+                // Plus de texte indiquant les tentatives - on le voit sur la grille
+                EmptyView()
                     
             case .won:
                 VStack(spacing: 10) {
