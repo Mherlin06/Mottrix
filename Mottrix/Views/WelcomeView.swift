@@ -1,18 +1,14 @@
-//
-//  WelcomeView.swift
-//  Mottrix
-//
-//  Created by Hugues Mourice on 24/07/2025.
-//
-
+// WelcomeView.swift - Version avec authentification
 import Foundation
 import SwiftUI
 
 struct WelcomeView: View {
+    @EnvironmentObject var authManager: AuthManager
     @StateObject private var themeManager = ThemeManager()
     @State private var selectedDifficulty: Int = 5
     @State private var showGame = false
     @State private var showingMenu = false
+    @State private var showingProfile = false
     
     var body: some View {
         ZStack {
@@ -20,8 +16,30 @@ struct WelcomeView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 30) {
-                // Header avec bouton menu
+                // Header avec profil et menu
                 HStack {
+                    // Bouton profil utilisateur
+                    Button(action: {
+                        HapticManager.shared.lightImpact()
+                        showingProfile = true
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "person.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(.blue)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(authManager.userProfile?.pseudo ?? "...")
+                                    .font(.headline)
+                                    .foregroundColor(themeManager.primaryTextColor)
+                                
+                                Text("Connecté")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                    }
+                    
                     Spacer()
                     
                     Button(action: {
@@ -69,7 +87,6 @@ struct WelcomeView: View {
                     }
                 }
                 
-                
                 // Bouton Jouer
                 Button("JOUER") {
                     HapticManager.shared.mediumImpact()
@@ -104,6 +121,10 @@ struct WelcomeView: View {
             MenuView(themeManager: themeManager) {
                 showingMenu = false
             }
+        }
+        .sheet(isPresented: $showingProfile) {
+            ProfileView(themeManager: themeManager)
+                .environmentObject(authManager)
         }
     }
 }

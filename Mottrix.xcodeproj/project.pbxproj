@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D75B0F952E3E7956009EC442 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = D75B0F942E3E7956009EC442 /* FirebaseAuth */; };
+		D75B0F972E3E7956009EC442 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = D75B0F962E3E7956009EC442 /* FirebaseFirestore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		D7023AA52E30F6D5002B2F6B /* Mottrix.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mottrix.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D76026C82E35767700204968 /* Mottrix.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = Mottrix.xcodeproj; sourceTree = "<group>"; };
@@ -24,6 +29,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D75B0F952E3E7956009EC442 /* FirebaseAuth in Frameworks */,
+				D75B0F972E3E7956009EC442 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -73,6 +80,8 @@
 			);
 			name = Mottrix;
 			packageProductDependencies = (
+				D75B0F942E3E7956009EC442 /* FirebaseAuth */,
+				D75B0F962E3E7956009EC442 /* FirebaseFirestore */,
 			);
 			productName = Mottrix;
 			productReference = D7023AA52E30F6D5002B2F6B /* Mottrix.app */;
@@ -102,6 +111,9 @@
 			);
 			mainGroup = D7023A9C2E30F6D5002B2F6B;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D75B0F932E3E7956009EC442 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D7023AA62E30F6D5002B2F6B /* Products */;
 			projectDirPath = "";
@@ -338,6 +350,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D75B0F932E3E7956009EC442 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D75B0F942E3E7956009EC442 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D75B0F932E3E7956009EC442 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		D75B0F962E3E7956009EC442 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D75B0F932E3E7956009EC442 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D7023A9D2E30F6D5002B2F6B /* Project object */;
 }
